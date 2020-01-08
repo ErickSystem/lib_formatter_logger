@@ -1,13 +1,13 @@
+import contextlib
 import json
+import logging
 import os
 import sys
-import contextlib
 import warnings
-import logging
 from logging import Formatter
 
-class DefaultOrganize(Formatter):
 
+class DefaultOrganize(Formatter):
     def __init__(self, extra):
         """Initialize the log formatter
 
@@ -19,30 +19,31 @@ class DefaultOrganize(Formatter):
 
     def format(self, record):
         data = {
-            'datetime': self.formatTime(record),
-            'level': record.levelname,
-            'msg': record.msg % record.args,
-            'log_hierarchy': record.name,
-            'function': record.funcName,
-            'module': record.module,
-            'thread_name': record.threadName
+            "datetime": self.formatTime(record),
+            "level": record.levelname,
+            "msg": record.msg % record.args,
+            "log_hierarchy": record.name,
+            "function": record.funcName,
+            "module": record.module,
+            "thread_name": record.threadName,
         }
 
         data.update(self.extra)
 
         if record.exc_info:
-            data['traceback'] = self.formatException(record.exc_info)
+            data["traceback"] = self.formatException(record.exc_info)
 
         if record.stack_info:
-            data['stack_info'] = self.formatStack(record.stack_info)
+            data["stack_info"] = self.formatStack(record.stack_info)
 
         return json.dumps(data)
+
 
 class ExecLogger(logging.getLoggerClass()):
     """A logger class that allows dinamic extra keys when used with
     a formatter thar suport `extra` atribute
     """
-    
+
     def __init__(self, name):
         self.context = {}
         self._formatter = None
@@ -61,10 +62,9 @@ class ExecLogger(logging.getLoggerClass()):
     @formatter.setter
     def formatter(self, formatter):
         self._formatter = formatter
-        if hasattr(formatter, 'extra'):
+        if hasattr(formatter, "extra"):
             formatter.extra.update(self.context)
             self.context = formatter.extra
-
 
     def set(self, **kargs):
         """Set a context to the logger
@@ -111,6 +111,7 @@ class ExecLogger(logging.getLoggerClass()):
             self.reset()
             self.context.update(old_contex)
 
+
 def setup(**kargs):
     """
     Note:
@@ -121,26 +122,26 @@ def setup(**kargs):
         use this only to fixed keys, prefere `logger.set` or `logger.extra` to mutable keys
         see `ExecLogger` documentation
     """
-    name = 'default'
-    if 'name' in kargs:
-        name = kargs['name']
+    name = "default"
+    if "name" in kargs:
+        name = kargs["name"]
 
     if issubclass(logging.getLoggerClass(), ExecLogger):
         return
 
     logging.setLoggerClass(ExecLogger)
 
-    logging_level = os.getenv('LOG_LEVEL', 'INFO')
+    logging_level = os.getenv("LOG_LEVEL", "INFO")
 
     if not logging_level:
-        logging_level = 'INFO'
+        logging_level = "INFO"
 
     if logging_level == "TRACE":
-        logging_level = 'DEBUG'
+        logging_level = "DEBUG"
         logger = logging.getLogger()
     else:
         logger = logging.getLogger(name)
-        
+
     logging.getLogger().handlers.clear()
 
     formatter = DefaultOrganize(extra=kargs)
@@ -152,6 +153,7 @@ def setup(**kargs):
     logger.setLevel(logging_level)
 
     logging.getLogger(name).formatter = formatter
+
 
 def setup_logging(**kargs):
     """
@@ -174,13 +176,15 @@ def setup_logging(**kargs):
     """
     logger = getLogger()
 
-    warnings.warn('setup_logging is deprecate, use `logger.set` or `logger.extra` instead',
-                  DeprecationWarning, stacklevel=2)
+    warnings.warn(
+        "setup_logging is deprecate, use `logger.set` or `logger.extra` instead", DeprecationWarning, stacklevel=2
+    )
 
     logger.reset()
     logger.set(**kargs)
 
     return logger
+
 
 def getLogger(name=None):
     """Get the fx Logger
