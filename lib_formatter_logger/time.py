@@ -14,7 +14,7 @@ def from_ns_timestamp(timestamp, timezone=timezone.utc):
     Returns:
         [datetime.datetime] -- the converted timestamp
     """
-    timestamp = timestamp / 10**9
+    timestamp = timestamp / 10 ** 9
     return datetime.fromtimestamp(timestamp, timezone)
 
 
@@ -30,5 +30,5 @@ def to_ns_timestamp(date_time):
     """
     if date_time.tzinfo is None:
         date_time = date_time.replace(tzinfo=timezone.utc)
-    
-    return int(date_time.timestamp()*10**6)*10**3
+
+    return int(date_time.timestamp() * 10 ** 6) * 10 ** 3
